@@ -1,0 +1,36 @@
+{
+  "name": "nestjs-rabbitmq-telegram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Microservices architecture with NestJS, RabbitMQ and Telegram",
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:producer": "npm run build -w @app/producer",
+    "build:consumer": "npm run build -w @app/consumer",
+    "build:telegram": "npm run build -w @app/telegram",
+    "start:producer": "npm run start:prod -w @app/producer",
+    "start:consumer": "npm run start:prod -w @app/consumer",
+    "start:telegram": "npm run start:prod -w @app/telegram",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @app/producer && npm run test:e2e -w @app/telegram",
+    "test:integration": "jest --config ./test/integration/jest.config.js",
+    "test:all": "npm test && npm run test:e2e && npm run test:integration",
+    "docker:up": "docker compose --env-file .env up --build -d",
+    "docker:down": "docker compose down -v",
+    "docker:verify": "npm run test:integration",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
