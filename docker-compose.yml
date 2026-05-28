@@ -1,0 +1,88 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: producer
+    container_name: producer
+    ports:
+      - '${PRODUCER_PORT:-3001}:3001'
+    environment:
+      PORT: 3001
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@rabbitmq:5672
+      RABBITMQ_PREFETCH: ${RABBITMQ_PREFETCH:-1}
+      RABBITMQ_MAX_RETRIES: ${RABBITMQ_MAX_RETRIES:-3}
+      RABBITMQ_MANUAL_ACK: ${RABBITMQ_MANUAL_ACK:-true}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: consumer
+    container_name: consumer
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@rabbitmq:5672
+      RABBITMQ_PREFETCH: ${RABBITMQ_PREFETCH:-1}
+      RABBITMQ_MAX_RETRIES: ${RABBITMQ_MAX_RETRIES:-3}
+      RABBITMQ_MANUAL_ACK: ${RABBITMQ_MANUAL_ACK:-true}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      producer:
+        condition: service_started
+    networks:
+      - microservices
+
+  telegram:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: telegram
+    container_name: telegram
+    ports:
+      - '${TELEGRAM_PORT:-3003}:3003'
+    environment:
+      PORT: 3003
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER:-guest}:${RABBITMQ_DEFAULT_PASS:-guest}@rabbitmq:5672
+      RABBITMQ_PREFETCH: ${RABBITMQ_PREFETCH:-1}
+      RABBITMQ_MAX_RETRIES: ${RABBITMQ_MAX_RETRIES:-3}
+      RABBITMQ_MANUAL_ACK: ${RABBITMQ_MANUAL_ACK:-true}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      TELEGRAM_API_BASE_URL: ${TELEGRAM_API_BASE_URL:-https://api.telegram.org}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      consumer:
+        condition: service_started
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge

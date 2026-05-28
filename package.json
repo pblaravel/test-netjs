@@ -1,0 +1,25 @@
+{
+  "name": "nestjs-rabbitmq-telegram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Microservices architecture with NestJS, RabbitMQ and Telegram",
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:producer": "npm run build -w @app/producer",
+    "build:consumer": "npm run build -w @app/consumer",
+    "build:telegram": "npm run build -w @app/telegram",
+    "start:producer": "npm run start:prod -w @app/producer",
+    "start:consumer": "npm run start:prod -w @app/consumer",
+    "start:telegram": "npm run start:prod -w @app/telegram",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @app/producer && npm run test:e2e -w @app/telegram",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
