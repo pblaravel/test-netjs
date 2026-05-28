@@ -137,8 +137,29 @@ npm run start:dev -w @app/telegram
 ## Тестирование
 
 ```bash
+# Unit-тесты (10 тестов)
 npm test
+
+# E2E-тесты API (2 теста)
 npm run test:e2e
+
+# Интеграционные тесты против Docker-стека (2 теста)
+npm run docker:up
+npm run test:integration
+```
+
+### Mock Telegram API
+
+Для локальной проверки без реального бота используется сервис `mock-telegram` (порт 8080):
+- `GET /health` — healthcheck
+- `GET /messages` — список отправленных сообщений (для отладки)
+
+### Docker-команды
+
+```bash
+npm run docker:up      # поднять весь стек
+npm run docker:verify  # интеграционные тесты против Docker
+npm run docker:down    # остановить и удалить контейнеры
 ```
 
 ## Структура проекта
